@@ -30,13 +30,18 @@ jobs:
     - name: Build
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
+      
+    - name: List directory structure
+      run: |
+        echo "Directory structure:"
+        dir /s build
+        
     - name: Release AutoSprint.dll
       uses: actions/upload-artifact@v2
       with:
         name: my-library
         path: |
-          ${{github.workspace}}build/**/*.dll
-          ${{github.workspace}}build/**/*.pdb
+          ${{github.workspace}}build/${{env.BUILD_TYPE}}/*.dll
+          ${{github.workspace}}build/${{env.BUILD_TYPE}}/*.pdb
           
 
