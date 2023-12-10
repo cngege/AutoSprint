@@ -34,13 +34,42 @@ jobs:
     - name: Upload Release AutoSprint.dll
       uses: actions/upload-artifact@v2
       with:
-        name: DLL
+        name: AutoSprint
         path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/AutoSprint.dll
 
-    - name: Upload Release pdb
-      uses: actions/upload-artifact@v2
-      with:
-        name: PDB
-        path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/AutoSprint.pdb
+  publish_release:
+    name: Publish release
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: build/
+          
+      - name: Create release
+        if: github.event.inputs.status == 'stable'
+        uses: ncipollo/release-action@v1
+        with:
+          prerelease: false
+          tag: ${{ github.event.inputs.tag }}
+          artifacts: |
+            ${{github.workspace}}/build/${{env.BUILD_TYPE}}/AutoSprint.zip
+        env:
+          GITHUB_REPOSITORY: CNGEGE/AutoSprint
+          
+      - name: Create pre-release
+        if: github.event.inputs.status != 'stable'
+        uses: ncipollo/release-action@v1
+        with:
+          prerelease: true
+          tag: ${{ github.event.inputs.tag }}
+          artifacts: |
+            ${{github.workspace}}/build/${{env.BUILD_TYPE}}/AutoSprint.zip
+        env:
+          GITHUB_REPOSITORY: CNGEGE/AutoSprint
           
 
