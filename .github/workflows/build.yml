@@ -34,7 +34,7 @@ jobs:
     - name: List directory structure
       run: |
         echo "Directory structure:"
-        dir /s .
+        dir /S /A /P .
         
     - name: Release AutoSprint.dll
       uses: actions/upload-artifact@v2
