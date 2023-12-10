@@ -48,7 +48,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          path: build/
+          path: ${{github.workspace}}/build/
           
       - name: Create release
         if: github.event.inputs.status == 'stable'
@@ -68,7 +68,7 @@ jobs:
           prerelease: true
           #tag: ${{ github.event.inputs.tag }}
           tag: test
-          #artifacts: build/AutoSprint.zip
+          #artifacts: ${{github.workspace}}/build/AutoSprint.zip
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
           
