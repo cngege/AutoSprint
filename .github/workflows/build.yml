@@ -68,8 +68,7 @@ jobs:
           prerelease: true
           #tag: ${{ github.event.inputs.tag }}
           tag: test
-          artifacts: |
-            build/AutoSprint.zip
+          #artifacts: build/AutoSprint.zip
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
           
