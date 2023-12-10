@@ -31,17 +31,17 @@ jobs:
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
       
-    - name: List directory structure
-      run: |
-        echo "Directory structure:"
-        echo "dir /S /A /P ."
-        
-    - name: Release AutoSprint.dll
+    - name: Upload Release AutoSprint.dll
       uses: actions/upload-artifact@v2
       with:
-        name: my-library
+        name: DLL
         path: |
-          ${{github.workspace}}/build/${{env.BUILD_TYPE}}/*.dll
-          ${{github.workspace}}/build/${{env.BUILD_TYPE}}/*.pdb
+          ${{github.workspace}}/build/${{env.BUILD_TYPE}}/AutoSprint.dll
+
+    - name: Upload Release pdb
+      uses: actions/upload-artifact@v2
+      with:
+        name: PDB
+        path: ${{github.workspace}}/build/${{env.BUILD_TYPE}}/AutoSprint.pdb
           
 
