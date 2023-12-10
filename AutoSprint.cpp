@@ -143,7 +143,7 @@ auto LockControlInputCallBack(void* thi, void* a2, void* a3, void* a4, void* a5,
 }
 
 
-auto main(HMODULE hModule) -> void {
+auto start(HMODULE hModule) -> void {
     // 拿到要Hook的关键函数的指针
     ptr = findSig("48 89 5C 24 ? 48 89 74 24 ? 57 48 83 EC ? 0F 10 42 ? 48 8B D9");
     _ASSERT(ptr);
@@ -162,7 +162,7 @@ auto main(HMODULE hModule) -> void {
 // Dll入口函数
 auto APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) -> BOOL {
     if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
-        CreateThread(nullptr, NULL, (LPTHREAD_START_ROUTINE)main, hModule, NULL, nullptr);
+        CreateThread(nullptr, NULL, (LPTHREAD_START_ROUTINE)start, hModule, NULL, nullptr);
     }
     else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
         if (status) {
