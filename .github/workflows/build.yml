@@ -53,7 +53,8 @@ jobs:
       - name: unzip
         working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
-          unzip build/AutoSprint.zip build/
+          dir /s build/
+          echo "unzip build/AutoSprint.zip build/"
         shell: bash
       
       - name: Create release
@@ -75,7 +76,7 @@ jobs:
           prerelease: true
           #tag: ${{ github.event.inputs.tag }}
           tag: test
-          artifacts: ${{github.workspace}}/build/AutoSprint.dll
+          artifacts: ${{github.workspace}}/build/*.*
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
