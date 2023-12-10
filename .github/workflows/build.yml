@@ -34,14 +34,14 @@ jobs:
     - name: List directory structure
       run: |
         echo "Directory structure:"
-        dir /s ${{github.workspace}}build
+        dir /s ${{github.workspace}}/build
         
     - name: Release AutoSprint.dll
       uses: actions/upload-artifact@v2
       with:
         name: my-library
         path: |
-          ${{github.workspace}}build/${{env.BUILD_TYPE}}/*.dll
-          ${{github.workspace}}build/${{env.BUILD_TYPE}}/*.pdb
+          ${{github.workspace}}/build/${{env.BUILD_TYPE}}/*.dll
+          ${{github.workspace}}/build/${{env.BUILD_TYPE}}/*.pdb
           
 
