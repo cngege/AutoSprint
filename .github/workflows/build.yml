@@ -69,7 +69,7 @@ jobs:
           #tag: ${{ github.event.inputs.tag }}
           tag: test
           artifacts: |
-            ${{github.workspace}}/build/${{env.BUILD_TYPE}}/AutoSprint.zip
+            AutoSprint.zip
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
           
