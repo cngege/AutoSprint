@@ -64,7 +64,7 @@ jobs:
           prerelease: false
           tag: ${{ github.event.inputs.tag }}
           artifacts: |
-            ${{github.workspace}}/build/${{env.BUILD_TYPE}}/AutoSprint.zip
+            ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -76,7 +76,7 @@ jobs:
           prerelease: true
           #tag: ${{ github.event.inputs.tag }}
           tag: test
-          artifacts: ${{github.workspace}}/build/*.*
+          artifacts: ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
