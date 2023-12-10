@@ -36,7 +36,7 @@ jobs:
       with:
         name: my-library
         path: |
-          build/**/*.dll
-          build/**/*.pdb
+          ${{github.workspace}}build/**/*.dll
+          ${{github.workspace}}build/**/*.pdb
           
 
