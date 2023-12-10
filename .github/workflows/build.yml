@@ -53,7 +53,7 @@ jobs:
       - name: unzip
         working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
-          dir /s build/
+          dir build/AutoSprint/
           echo "unzip build/AutoSprint.zip build/"
         shell: bash
       
