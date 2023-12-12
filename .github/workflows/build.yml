@@ -4,9 +4,8 @@ name: CMake Build AutoSprint.dll
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    tags:
+      - '*'
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -44,10 +43,6 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v2
-      - name: getTag
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -60,7 +55,7 @@ jobs:
         working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
           dir build/AutoSprint/
-          echo "unzip build/AutoSprint.zip build/"
+          echo "${{env.RELEASE_VERSION}}"
         shell: bash
       
       - name: Create release
@@ -74,13 +69,19 @@ jobs:
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
           GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
-          
+
+      - name: Get tag
+        id: tag
+        uses: devops-actions/action-get-tag@v1.0.1
+        with:
+            default: v0.0.0 # Optional: Default version when tag not found
+
       - name: Create pre-release
         if: github.event.inputs.status != 'stable'
         uses: ncipollo/release-action@v1
         with:
           prerelease: true
-          tag: ${{env.RELEASE_VERSION}}
+          tag: ${{steps.tag.outputs.tag}}
           artifacts: ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
