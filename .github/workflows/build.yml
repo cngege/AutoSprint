@@ -57,18 +57,6 @@ jobs:
           dir build/AutoSprint/
           echo "${{env.RELEASE_VERSION}}"
         shell: bash
-      
-      - name: Create release
-        if: github.event.inputs.status == 'stable'
-        uses: ncipollo/release-action@v1
-        with:
-          prerelease: false
-          tag: ${{ github.event.inputs.tag }}
-          artifacts: |
-            ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
-        env:
-          GITHUB_REPOSITORY: CNGEGE/AutoSprint
-          GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
 
       - name: Get tag
         id: tag
@@ -77,14 +65,14 @@ jobs:
             default: v0.0.0 # Optional: Default version when tag not found
 
       - name: Create pre-release
-        if: github.event.inputs.status != 'stable'
+        #if: github.event.inputs.status != 'stable'
         uses: ncipollo/release-action@v1
         with:
-          prerelease: true
+          prerelease: false #  «∑Ò «‘§¿¿∞Ê
           tag: ${{steps.tag.outputs.tag}}
           artifacts: ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
-          GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
+          #GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
           
 
