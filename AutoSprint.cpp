@@ -173,3 +173,13 @@ auto APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 
     return TRUE;
 }
+
+
+// 自动发布：
+// 首先将所有代码GitHub提交完成后
+// 进入 git更改  查看所有提交
+// 右键最近的提交，点击新建标记
+// 然后分别输入标签名(版本号), 内容
+// 点击创建
+// 进入Git更改， 点击右上角三个点,点击将所有标记（--tags）推送到
+// 点击origin， 等待推送成功即可
