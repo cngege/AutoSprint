@@ -36,7 +36,7 @@ struct ControlKey
 };
 
 // 使用特征码查找地址
-auto findSig(const char* szSignature) -> uintptr_t {
+static auto findSig(const char* szSignature) -> uintptr_t {
     const char* pattern = szSignature;
     uintptr_t firstMatch = 0;
 
@@ -95,7 +95,7 @@ auto findSig(const char* szSignature) -> uintptr_t {
  * @param border
  * @return
 */
-uintptr_t FindSignatureRelay(uintptr_t szPtr, const char* szSignature, int border) {
+static uintptr_t FindSignatureRelay(uintptr_t szPtr, const char* szSignature, int border) {
     //uintptr_t startPtr = szPtr;
     const char* pattern = szSignature;
     for (;;) {
@@ -143,7 +143,7 @@ auto LockControlInputCallBack(void* thi, void* a2, void* a3, void* a4, void* a5,
 }
 
 
-auto start(HMODULE hModule) -> void {
+static auto start(HMODULE hModule) -> void {
     // 拿到要Hook的关键函数的指针
     ptr = findSig("48 89 5C 24 ? 48 89 74 24 ? 57 48 83 EC ? 0F 10 42 ? 48 8B D9");
     _ASSERT(ptr);
