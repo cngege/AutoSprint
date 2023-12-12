@@ -4,9 +4,8 @@ name: CMake Build AutoSprint.dll
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    tags:
+      - "*"
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -76,7 +75,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           prerelease: true
-          tag: ${{ github.event.inputs.tag }}
+          allowUpdates: true
+          #tag: ${{github.event.inputs.tag}}
           artifacts: ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
