@@ -41,6 +41,8 @@ jobs:
     name: Publish release
     needs: build
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -67,7 +69,7 @@ jobs:
             ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
           
       - name: Create pre-release
         if: github.event.inputs.status != 'stable'
@@ -75,8 +77,8 @@ jobs:
         with:
           prerelease: true
           #tag: ${{ github.event.inputs.tag }}
-          tag: test
-          artifacts: ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
+          tag: 1.2.3
+          #artifacts: ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
           GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
