@@ -76,9 +76,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           prerelease: true
-          #tag: ${{ github.event.inputs.tag }}
-          tag: 1.2.3
-          #artifacts: ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
+          tag: ${{ github.event.inputs.tag }}
+          artifacts: ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
           GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
