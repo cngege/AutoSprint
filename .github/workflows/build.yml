@@ -68,7 +68,7 @@ jobs:
         #if: github.event.inputs.status != 'stable'
         uses: ncipollo/release-action@v1
         with:
-          prerelease: true # 是否是预览版
+          prerelease: false # 是否是预览版
           tag: ${{steps.tag.outputs.tag}}
           bodyFile: "ReleaseBody.md"
           #name: 0
