@@ -56,8 +56,8 @@ jobs:
         run: |
           dir build/AutoSprint/
           dir .
-          GIT_TAG_INFO=$(git show ${GITHUB_REF} --quiet)
-          echo "Tag info: $GIT_TAG_INFO"
+          GIT_TAG_MESSAGE=$(git tag -l --format='%(contents)' ${{ github.ref }})
+          echo "Tag message: $GIT_TAG_MESSAGE"
           
         shell: bash
 
