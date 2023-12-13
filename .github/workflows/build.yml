@@ -56,7 +56,8 @@ jobs:
         run: |
           dir build/AutoSprint/
           dir .
-          echo ${{ github.event.before }}
+          GIT_TAG_INFO=$(git show ${GITHUB_REF} --quiet)
+          echo "Tag info: $GIT_TAG_INFO"
           
         shell: bash
 
