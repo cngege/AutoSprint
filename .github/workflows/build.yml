@@ -1,4 +1,4 @@
-# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
+ï»¿# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
 name: CMake Build AutoSprint.dll
 
@@ -45,8 +45,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Download artifacts
         uses: actions/download-artifact@v3
@@ -64,22 +62,18 @@ jobs:
         run: |
           dir build/AutoSprint/
           dir .
-          git show "${{steps.tag.outputs.tag}}"
-          GIT_TAG_MESSAGE=$(git show "${{steps.tag.outputs.tag}}" | sed -n '5p')
-          echo "The tag message is: $GIT_TAG_MESSAGE"
         shell: bash
 
       - name: Create release
         #if: github.event.inputs.status != 'stable'
         uses: ncipollo/release-action@v1
         with:
-          prerelease: true # ÊÇ·ñÊÇÔ¤ÀÀ°æ
+          prerelease: true # æ˜¯å¦æ˜¯é¢„è§ˆç‰ˆ
           tag: ${{steps.tag.outputs.tag}}
           bodyFile: "ReleaseBody.md"
-          name: 0
+          #name: 0
           artifacts: ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
-          #ºóĞø¸Ä½ø,½«±êÇ©body×÷Îª±êÌâ£¬Áí½¨Ò»¸ömdÎÄ¼ş×÷Îªbody
           
 
