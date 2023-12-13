@@ -55,24 +55,29 @@ jobs:
         working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
           dir build/AutoSprint/
-          echo "${{env.RELEASE_VERSION}}"
+          dir .
+          echo ${{ github.ref }}
+          git show --format=%B ${{ github.ref }} > pushed_tag_body.txt
+          type pushed_tag_body.txt
         shell: bash
 
       - name: Get tag
         id: tag
-        uses: devops-actions/action-get-tag@v1.0.1
+        uses: devops-actions/action-get-tag@v1.0.2
         with:
             default: v0.0.0 # Optional: Default version when tag not found
 
-      - name: Create pre-release
+      - name: Create release
         #if: github.event.inputs.status != 'stable'
         uses: ncipollo/release-action@v1
         with:
-          prerelease: false # 是否是预览版
+          prerelease: true # 是否是预览版
           tag: ${{steps.tag.outputs.tag}}
+          bodyFile: "ReleaseBody.md"
+          name: 0
           artifacts: ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
-          #GITHUB_TOKEN: ${{secrets.GH_TOKEN}}
+          #后续改进,将标签body作为标题，另建一个md文件作为body
           
 
