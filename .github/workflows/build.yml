@@ -62,6 +62,7 @@ jobs:
         run: |
           dir build/AutoSprint/
           dir .
+          git show "${{steps.tag.outputs.tag}}"
           GIT_TAG_MESSAGE=$(git show "${{steps.tag.outputs.tag}}" | sed -n '5p')
           echo "The tag message is: $GIT_TAG_MESSAGE"
         shell: bash
