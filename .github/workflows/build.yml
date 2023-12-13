@@ -53,14 +53,16 @@ jobs:
         with:
           path: ${{github.workspace}}/build/
 
+      - name: get tag Annotation
+        uses: ericcornelissen/git-tag-annotation-action@v2
+        id: tag-data
+
       - name: cmd
         working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
           dir build/AutoSprint/
           dir .
-          GIT_TAG_NAME=${GITHUB_REF#refs/tags/}
-          GIT_TAG_MESSAGE=$(git tag -l --format='%(contents)' "${GIT_TAG_NAME}")
-          echo "Tag message: $GIT_TAG_MESSAGE"
+          echo ${{ steps.tag-data.outputs.git-tag-annotation }}
           
         shell: bash
 
@@ -77,7 +79,7 @@ jobs:
           prerelease: true #  «∑Ò «‘§¿¿∞Ê
           tag: ${{steps.tag.outputs.tag}}
           bodyFile: "ReleaseBody.md"
-          name: 0
+          name: ${{ steps.tag-data.outputs.git-tag-annotation }}
           artifacts: ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
