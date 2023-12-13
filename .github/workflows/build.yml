@@ -51,15 +51,13 @@ jobs:
         with:
           path: ${{github.workspace}}/build/
 
-      - name: unzip
+      - name: cmd
         working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
           dir build/AutoSprint/
           dir .
-          echo ${{ github.ref }}
-          touch pushed_tag_body.txt
-          git show --format=%B ${{ github.ref }} > pushed_tag_body.txt
-          cat pushed_tag_body.txt
+          echo ${{ github.event.before }}
+          
         shell: bash
 
       - name: Get tag
