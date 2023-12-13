@@ -57,8 +57,9 @@ jobs:
           dir build/AutoSprint/
           dir .
           echo ${{ github.ref }}
+          touch pushed_tag_body.txt
           git show --format=%B ${{ github.ref }} > pushed_tag_body.txt
-          type pushed_tag_body.txt
+          cat pushed_tag_body.txt
         shell: bash
 
       - name: Get tag
