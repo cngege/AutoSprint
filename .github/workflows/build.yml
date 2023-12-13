@@ -50,25 +50,21 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: ${{github.workspace}}/build/
-
-      - name: get tag Annotation
-        uses: ericcornelissen/git-tag-annotation-action@v2
-        id: tag-data
+          
+      - name: Get tag
+        id: tag
+        uses: devops-actions/action-get-tag@v1.0.2
+        with:
+            default: v0.0.0 # Optional: Default version when tag not found
 
       - name: cmd
         working-directory: ${{ env.GITHUB_WORKSPACE }}
         run: |
           dir build/AutoSprint/
           dir .
-          echo ${{ steps.tag-data.outputs.git-tag-annotation }}
-          
+          GIT_TAG_MESSAGE=$(git tag -l --format='%(contents)' "${{steps.tag.outputs.tag}}")
+          echo "The tag message is: $GIT_TAG_MESSAGE"
         shell: bash
-
-      - name: Get tag
-        id: tag
-        uses: devops-actions/action-get-tag@v1.0.2
-        with:
-            default: v0.0.0 # Optional: Default version when tag not found
 
       - name: Create release
         #if: github.event.inputs.status != 'stable'
@@ -77,7 +73,7 @@ jobs:
           prerelease: true #  «∑Ò «‘§¿¿∞Ê
           tag: ${{steps.tag.outputs.tag}}
           bodyFile: "ReleaseBody.md"
-          name: ${{ steps.tag-data.outputs.git-tag-annotation }}
+          name: 0
           artifacts: ${{github.workspace}}/build/AutoSprint/AutoSprint.dll
         env:
           GITHUB_REPOSITORY: CNGEGE/AutoSprint
