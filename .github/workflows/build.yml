@@ -62,7 +62,7 @@ jobs:
         run: |
           dir build/AutoSprint/
           dir .
-          GIT_TAG_MESSAGE=$(git tag -l --format='%(contents)' "${{steps.tag.outputs.tag}}")
+          GIT_TAG_MESSAGE=$(git for-each-ref refs/tags/"${{steps.tag.outputs.tag}}" --format='%(contents)')
           echo "The tag message is: $GIT_TAG_MESSAGE"
         shell: bash
 
