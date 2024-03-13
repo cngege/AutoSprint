@@ -25,3 +25,6 @@ endif()
 
 # TODO: 如有需要，请添加测试并安装目标。
 
+#set_target_properties(AutoSprint PROPERTIES
+#    VERSION 1.0.4
+#    SOVERSION 1)
