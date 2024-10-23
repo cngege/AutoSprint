@@ -130,7 +130,8 @@ static HookInformation info;
 static int status;
 static int offset;
 static uintptr_t ptr;
-typedef void* (*LockControlInputCall)(void* thi, ControlKey* a);
+typedef void* (*LockControlInputCall)(void* thi, ControlKey* a2);
+typedef void* (*LockControlInputCall2)(void* thi, ControlKey* a2, void* a3, void* a4, void* a5, void* a6, void* a7, void* a8, void* a9, void* a10, void* a11);
 
 // Hook 后的关键函数
 auto LockControlInputCallBack(void* thi, ControlKey* a2) -> void*
@@ -142,19 +143,21 @@ auto LockControlInputCallBack(void* thi, ControlKey* a2) -> void*
     return original(thi, a2);
 }
 
+auto LockControlInputCallBack2(void* thi, ControlKey* a2, void* a3, void* a4, void* a5, void* a6, void* a7, void* a8, void* a9, void* a10, void* a11) -> void* {
+    auto control = (ControlKey*)(((uintptr_t)a2 + 0x20));
+    control->Sprinting = true;
+    auto original = (LockControlInputCall2)info.Trampoline;
+    return original(thi, a2,a3,a4,a5,a6,a7,a8,a9,a10,a11);
+}
 
 static auto start(HMODULE hModule) -> void {
     // 拿到要Hook的关键函数的指针
-    ptr = findSig("0F B6 ? 88 ? 0F B6 42 01 88 41 01 0F");
+    //ptr = findSig("0F B6 ? 88 ? 0F B6 42 01 88 41 01 0F"); //new
+    ptr = findSig("48 89 5C 24 ? 48 89 74 24 ? 57 48 83 EC ? 0F B6 ? ? 49"); //old
     _ASSERT(ptr);
 
-    // 拿到参数到 玩家行为控制系统的指针
-    //auto _offset = FindSignatureRelay(ptr, "0F 10 42", 32);
-    //_ASSERT(_offset);
-    //offset = (int)*reinterpret_cast<byte*>(_offset + 3);
-
     // 创建&开启Hook
-    info = CreateHook((void*)ptr, (void*)&LockControlInputCallBack);
+    info = CreateHook((void*)ptr, (void*)&LockControlInputCallBack2);
     status = EnableHook(&info);
 
 }
