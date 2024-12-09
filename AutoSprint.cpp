@@ -12,6 +12,11 @@
   (INRANGE((x & (~0x20)), 'A', 'F') ? ((x & (~0x20)) - 'A' + 0xa)              \
                                     : (INRANGE(x, '0', '9') ? x - '0' : 0))
 
+struct vec2 {
+    float x;
+    float y;
+};
+
 struct ControlKey
 {
     bool Sneak;							// 潜行
@@ -20,19 +25,28 @@ struct ControlKey
     BYTE __unknowkey3;
     BYTE __unknowkey4;
     BYTE __unknowkey5;
-    bool Jump;
-    bool Sprinting;
+    BYTE __unknowkey6;
+    bool Jump;                          // 跳跃键
+    bool Sprinting;                     // 疾跑键
     bool WA;							// 向左前移动
     bool WD;							// 向右前移动
+    bool SA;							// 向左后移动
+    bool SD;							// 向右后移动
     bool W;
     bool S;
     bool A;
     bool D;
-    BYTE __unknowkey6[2];
-    BYTE __unknowkey7[16];
-    BYTE __unknowkey8[8];
-    float HorizontalRocker;				// 水平的值（左右 左1  右-1  好像是只读
-    float VerticalRocker;				// 垂直的值 (前后 前1  后-1  好像是只读
+    BYTE __unknowkey7[2];
+    BYTE __unknowkey8[16];
+    BYTE __unknowkey9[14];
+    vec2 NormalizedAxisValue;           // 左右和前后的轴值 -1 到 1 之间 左和前表示 1
+    BYTE __unknowkey10[8];
+    /**
+     * @brief x: 玩家视角与水平方向夹角（上90下-90） y: 玩家视角与北南向量夹角 正东-90, 正西+90, 正南0
+     */
+    vec2 ViewDirectionAngles;
+    const float HorizontalRocker;		    // [未使用]水平的值（左右 左1  右-1  好像是只读
+    const float VerticalRocker;				// [未使用]垂直的值 (前后 前1  后-1  好像是只读
 };
 
 // 使用特征码查找地址
@@ -128,38 +142,101 @@ static uintptr_t FindSignatureRelay(uintptr_t szPtr, const char* szSignature, in
 
 static HookInformation info;
 static int status;
-static int offset;
+static int offset1;
+static int offset2;
 static uintptr_t ptr;
-typedef void* (*LockControlInputCall)(void* thi, ControlKey* a2);
-typedef void* (*LockControlInputCall2)(void* thi, ControlKey* a2, void* a3, void* a4, void* a5, void* a6, void* a7, void* a8, void* a9, void* a10, void* a11);
+
+static bool debugConsole = false;
+
+template<typename T>
+T toType(void* a, T b) {
+    return (T)a;
+}
 
 // Hook 后的关键函数
 auto LockControlInputCallBack(void* thi, ControlKey* a2) -> void*
 {
     //auto control = (ControlKey*)(((uintptr_t)a2 + offset));
     a2->Sprinting = true;
-
-    auto original = (LockControlInputCall)info.Trampoline;
+    if(debugConsole) {
+        static bool trigger = false;
+        if(!trigger) {
+            trigger = true;
+            printf_s("this: 0x%llx, a2: 0x%llx\n", \
+                     (uintptr_t)thi, (uintptr_t)a2
+            );
+        }
+    }
+    auto original = toType(info.Trampoline, LockControlInputCallBack);
     return original(thi, a2);
 }
 
 auto LockControlInputCallBack2(void* thi, ControlKey* a2, void* a3, void* a4, void* a5, void* a6, void* a7, void* a8, void* a9, void* a10, void* a11) -> void* {
-    auto control = (ControlKey*)(((uintptr_t)a2 + 0x20));
+    auto control = (ControlKey*)(((uintptr_t)a2 + offset2));
     control->Sprinting = true;
-    auto original = (LockControlInputCall2)info.Trampoline;
+    
+    if(debugConsole){
+        static bool trigger = false;
+        if(!trigger) {
+            trigger = true;
+            printf_s("this: 0x%llx, a2: 0x%llx, a3: 0x%llx, a4: 0x%llx, a5: 0x%llx, a6: 0x%llx, a7: 0x%llx, a8: 0x%llx, a9: 0x%llx, a10: 0x%llx, a11: 0x%llx\n", \
+                     (uintptr_t)thi, (uintptr_t)a2, (uintptr_t)a3, (uintptr_t)a4, (uintptr_t)a5, (uintptr_t)a6, (uintptr_t)a7, (uintptr_t)a8, (uintptr_t)a9, (uintptr_t)a10, (uintptr_t)a11
+            );
+        }
+    }
+    auto original = toType(info.Trampoline, LockControlInputCallBack2);
     return original(thi, a2,a3,a4,a5,a6,a7,a8,a9,a10,a11);
 }
 
 static auto start(HMODULE hModule) -> void {
+    if(debugConsole){
+        //显示控制台
+        HWND consoleHwnd = GetConsoleWindow();
+        if(!consoleHwnd) {
+            static FILE* f;
+            AllocConsole();
+            freopen_s(&f, "CONOUT$", "w", stdout);
+            freopen_s(&f, "CONIN$", "r", stdin);
+            SetConsoleTitle("Debug Console");
+        }
+        else {
+            ShowWindow(GetConsoleWindow(), SW_SHOW);
+        }
+    }
+
+
     // 拿到要Hook的关键函数的指针
     //ptr = findSig("0F B6 ? 88 ? 0F B6 42 01 88 41 01 0F"); //new
     ptr = findSig("48 89 5C 24 ? 48 89 74 24 ? 57 48 83 EC ? 0F B6 ? ? 49"); //old
-    _ASSERT(ptr);
+    if(ptr) {
+        offset2 = *reinterpret_cast<byte*>(ptr + 18); // 0f b6 ? 28
+        info = CreateHook((void*)ptr, (void*)&LockControlInputCallBack2);
+        status = EnableHook(&info);
 
-    // 创建&开启Hook
-    info = CreateHook((void*)ptr, (void*)&LockControlInputCallBack2);
-    status = EnableHook(&info);
+        if(debugConsole) std::cout << "[old] 特征码找到 已创建hook " << ((status) ? "开启Hook成功" : "开启Hook失败") << std::endl;
+    }
+    else {
+        ptr = findSig("0F B6 ? 88 ? 0F B6 42 01 88 41 01 0F"); //new
+        if(ptr) {
+            info = CreateHook((void*)ptr, (void*)&LockControlInputCallBack);
+            status = EnableHook(&info);
+            if(debugConsole) std::cout << "[new] 特征码找到 已创建hook " << ((status) ? "开启Hook成功" : "开启Hook失败") << std::endl;
+        }
+        if(debugConsole) std::cout << "[all] 特征码查找失败 " << std::endl;
+    }
 
+    if(!debugConsole) _ASSERT(ptr);
+}
+
+void exit(HMODULE hModule) {
+    if(debugConsole) {
+        ShowWindow(GetConsoleWindow(), SW_HIDE);
+        system("cls");
+    }
+    if(status) {
+        // 反注入则关闭Hook
+        DisableHook(&info);
+    }
 }
 
 // Dll入口函数
@@ -168,10 +245,7 @@ auto APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         CreateThread(nullptr, NULL, (LPTHREAD_START_ROUTINE)start, hModule, NULL, nullptr);
     }
     else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
-        if (status) {
-            // 反注入则关闭Hook
-            DisableHook(&info);
-        }
+        exit(hModule);
     }
 
     return TRUE;
