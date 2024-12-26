@@ -12,6 +12,12 @@
   (INRANGE((x & (~0x20)), 'A', 'F') ? ((x & (~0x20)) - 'A' + 0xa)              \
                                     : (INRANGE(x, '0', '9') ? x - '0' : 0))
 
+#include "imgui_toggle/imgui_toggle.h"
+
+static bool* Tag;
+static int Id;
+static bool ModExitTag = false;
+
 struct vec2 {
     float x;
     float y;
@@ -146,64 +152,91 @@ static int offset1;
 static int offset2;
 static uintptr_t ptr;
 
-static bool debugConsole = false;
+static bool ModuleEnable = true;
 
 template<typename T>
 T toType(void* a, T b) {
     return (T)a;
 }
 
+void* imgui_print = nullptr;
+void LogPrint(const char* fmt, ...) {
+    if(Tag && Tag[0] && imgui_print) {
+        char buffer[1024];
+        va_list args;
+        va_start(args, fmt);
+        vsnprintf(buffer, sizeof(buffer), fmt, args);
+        va_end(args);
+        ((void(__fastcall*)(const char*))imgui_print)(buffer);
+    }
+}
+
+/**
+ * @brief 注册渲染回调
+ * @param call
+ * @return
+ */
+extern "C" __declspec(dllexport) void __stdcall ImGuiRender(ImGuiIO* io, ImGuiContext* ctx/*, bool tag[], int id*/) {
+    ImGui::SetCurrentContext(ctx);
+    //ImGui::GetIO() = *io;
+
+    if(ImGui::Begin("AutoSprite")) {
+        ImGui::Toggle("是否开启自动疾跑", &ModuleEnable);
+    }
+    ImGui::End();
+}
+
+extern "C" __declspec(dllexport) void __stdcall ImGuiUpdateData(bool tag[], int id, void* funptr) {
+    Tag = tag;
+    Id = id;
+    tag[id] = !ModExitTag;
+    imgui_print = funptr;
+}
+
 // Hook 后的关键函数
 auto LockControlInputCallBack(void* thi, ControlKey* a2) -> void*
 {
-    //auto control = (ControlKey*)(((uintptr_t)a2 + offset));
-    a2->Sprinting = true;
-    if(debugConsole) {
-        static bool trigger = false;
-        if(!trigger) {
-            trigger = true;
-            printf_s("this: 0x%llx, a2: 0x%llx\n", \
-                     (uintptr_t)thi, (uintptr_t)a2
-            );
-        }
+    static bool trigger = false;
+    if(!trigger) {
+        trigger = true;
+        LogPrint("[info AutoSprite] this: 0x%llx, a2: 0x%llx", \
+                                                 (uintptr_t)thi, (uintptr_t)a2
+        );
+    }
+    if(ModuleEnable) {
+        a2->Sprinting = true;
     }
     auto original = toType(info.Trampoline, LockControlInputCallBack);
     return original(thi, a2);
 }
 
 auto LockControlInputCallBack2(void* thi, ControlKey* a2, void* a3, void* a4, void* a5, void* a6, void* a7, void* a8, void* a9, void* a10, void* a11) -> void* {
-    auto control = (ControlKey*)(((uintptr_t)a2 + offset2));
-    control->Sprinting = true;
+    if(ModuleEnable) {
+        auto control = (ControlKey*)(((uintptr_t)a2 + offset2));
+        control->Sprinting = true;
+    }
     
-    if(debugConsole){
-        static bool trigger = false;
-        if(!trigger) {
-            trigger = true;
-            printf_s("this: 0x%llx, a2: 0x%llx, a3: 0x%llx, a4: 0x%llx, a5: 0x%llx, a6: 0x%llx, a7: 0x%llx, a8: 0x%llx, a9: 0x%llx, a10: 0x%llx, a11: 0x%llx\n", \
-                     (uintptr_t)thi, (uintptr_t)a2, (uintptr_t)a3, (uintptr_t)a4, (uintptr_t)a5, (uintptr_t)a6, (uintptr_t)a7, (uintptr_t)a8, (uintptr_t)a9, (uintptr_t)a10, (uintptr_t)a11
-            );
-        }
+    static bool trigger = false;
+    if(!trigger) {
+        trigger = true;
+        LogPrint("[info AutoSprite] this: 0x%llx, a2: 0x%llx, a3: 0x%llx, a4: 0x%llx, a5: 0x%llx, a6: 0x%llx, a7: 0x%llx, a8: 0x%llx, a9: 0x%llx, a10: 0x%llx, a11: 0x%llx", \
+                                                 (uintptr_t)thi, (uintptr_t)a2, (uintptr_t)a3, (uintptr_t)a4, (uintptr_t)a5, (uintptr_t)a6, (uintptr_t)a7, (uintptr_t)a8, (uintptr_t)a9, (uintptr_t)a10, (uintptr_t)a11
+        );
     }
     auto original = toType(info.Trampoline, LockControlInputCallBack2);
     return original(thi, a2,a3,a4,a5,a6,a7,a8,a9,a10,a11);
 }
 
-static auto start(HMODULE hModule) -> void {
-    if(debugConsole){
-        //显示控制台
-        HWND consoleHwnd = GetConsoleWindow();
-        if(!consoleHwnd) {
-            static FILE* f;
-            AllocConsole();
-            freopen_s(&f, "CONOUT$", "w", stdout);
-            freopen_s(&f, "CONIN$", "r", stdin);
-            SetConsoleTitle("Debug Console");
-        }
-        else {
-            ShowWindow(GetConsoleWindow(), SW_SHOW);
-        }
-    }
 
+
+
+
+/**
+ * @brief 入口函数
+ * @param hModule 
+ * @return 
+ */
+static auto start(HMODULE hModule) -> void {
 
     // 拿到要Hook的关键函数的指针
     //ptr = findSig("0F B6 ? 88 ? 0F B6 42 01 88 41 01 0F"); //new
@@ -213,25 +246,23 @@ static auto start(HMODULE hModule) -> void {
         info = CreateHook((void*)ptr, (void*)&LockControlInputCallBack2);
         status = EnableHook(&info);
 
-        if(debugConsole) std::cout << "[old] 特征码找到 已创建hook " << ((status) ? "开启Hook成功" : "开启Hook失败") << std::endl;
+        LogPrint("[info AutoSprite] [old] 特征码找到 已创建hook %s", ((status) ? "开启Hook成功" : "开启Hook失败"));
     }
     else {
         ptr = findSig("0F B6 ? 88 ? 0F B6 42 01 88 41 01 0F"); //new
         if(ptr) {
             info = CreateHook((void*)ptr, (void*)&LockControlInputCallBack);
             status = EnableHook(&info);
-            if(debugConsole) std::cout << "[new] 特征码找到 已创建hook " << ((status) ? "开启Hook成功" : "开启Hook失败") << std::endl;
+            LogPrint("[info AutoSprite] [new] 特征码找到 已创建hook %s", ((status) ? "开启Hook成功" : "开启Hook失败"));
         }
-        if(debugConsole) std::cout << "[all] 特征码查找失败 " << std::endl;
+        LogPrint("[info AutoSprite] 特征码查找失败");
     }
-
-    if(!debugConsole) _ASSERT(ptr);
 }
 
 void exit(HMODULE hModule) {
-    if(debugConsole) {
-        ShowWindow(GetConsoleWindow(), SW_HIDE);
-        system("cls");
+    ModExitTag = true;
+    if(Tag && Id) {
+        Tag[Id] = false;
     }
     if(status) {
         // 反注入则关闭Hook
@@ -247,7 +278,6 @@ auto APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
         exit(hModule);
     }
-
     return TRUE;
 }
 
