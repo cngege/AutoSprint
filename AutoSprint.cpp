@@ -178,9 +178,9 @@ void LogPrint(const char* fmt, ...) {
  */
 extern "C" __declspec(dllexport) void __stdcall ImGuiRender(ImGuiIO* io, ImGuiContext* ctx/*, bool tag[], int id*/) {
     ImGui::SetCurrentContext(ctx);
-    //ImGui::GetIO() = *io;
+    ImGui::GetIO() = *io;
 
-    if(ImGui::Begin("AutoSprite")) {
+    if(ImGui::Begin("AutoSprite",nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         ImGui::Toggle("是否开启自动疾跑", &ModuleEnable);
     }
     ImGui::End();
